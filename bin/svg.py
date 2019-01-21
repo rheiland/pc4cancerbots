@@ -286,7 +286,10 @@ class SVGTab(object):
 
 #rwh - temp fix - Ah, error only occurs when "edges" is toggled on
         if (self.show_edge):
-            plt.scatter(xvals,yvals, s=markers_size, c=rgbs, edgecolor='black', linewidth=0.5)
+            try:
+                plt.scatter(xvals,yvals, s=markers_size, c=rgbs, edgecolor='black', linewidth=0.5)
+            except (ValueError):
+                pass
         else:
             plt.scatter(xvals,yvals, s=markers_size, c=rgbs)
 
