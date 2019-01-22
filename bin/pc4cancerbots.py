@@ -281,3 +281,12 @@ else:
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, run_button.w])
     gui = widgets.VBox(children=[read_config, tabs, run_button.w])
 fill_gui_params(read_config.options['DEFAULT'])
+
+# pass in (relative) directory where output data is located
+#svg.update(read_config.value)
+#output_dir = "output"
+output_dir = "tmpdir"
+svg.update(output_dir)
+#sub.update_dropdown_fields(output_dir)
+sub.update_dropdown_fields("data")
+sub.update(output_dir)

@@ -1,15 +1,15 @@
 # substrates  Tab
+
 import os, math
-from ipywidgets import Layout, Label, Text, Checkbox, Button, BoundedIntText, HBox, VBox, Box, FloatText, Dropdown, interactive
+from ipywidgets import Layout, Label, Text, Checkbox, Button, BoundedIntText, HBox, VBox, Box, \
+    FloatText, Dropdown, interactive
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import matplotlib.colors as mplc
 import scipy.io
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import glob
-import zipfile
-from hublib.ui import Download
-from debug import debug_view
+from debug import debug_view 
 
 
 class SubstrateTab(object):
@@ -17,44 +17,44 @@ class SubstrateTab(object):
     def __init__(self):
         
         self.output_dir = '.'
+#        self.output_dir = 'tmpdir'
 
-#        self.fig = plt.figure(figsize=(7.2,6))  # this strange figsize results in a ~square contour plot
-        # self.fig = plt.figure(figsize=(8.4,7))  # this strange figsize results in a ~square contour plot & accomodates the colorbar
+        self.fig = plt.figure(figsize=(7.2,6))  # this strange figsize results in a ~square contour plot
 
         # initial value
         self.field_index = 4
         # self.field_index = self.mcds_field.value + 4
 
+        tab_height = '500px'
         constWidth = '180px'
         constWidth2 = '150px'
+        tab_layout = Layout(width='900px',   # border='2px solid black',
+                            height=tab_height, ) #overflow_y='scroll')
 
-        # tab_height = '520px'
-        # tab_layout = Layout(width='900px',   # border='2px solid black',
-        #                     height=tab_height, ) #overflow_y='scroll')
-
-        max_frames = 5   
+        max_frames = 1   
         self.mcds_plot = interactive(self.plot_substrate, frame=(0, max_frames), continuous_update=False)  
-        plot_size = '700px'
-        self.mcds_plot.layout.width = plot_size
-        self.mcds_plot.layout.height = plot_size
+        svg_plot_size = '700px'
+        self.mcds_plot.layout.width = svg_plot_size
+        self.mcds_plot.layout.height = svg_plot_size
 
         self.max_frames = BoundedIntText(
             min=0, max=99999, value=max_frames,
             description='Max',
-            layout=Layout(width='160px'),
+           layout=Layout(width='160px'),
         )
         self.max_frames.observe(self.update_max_frames)
 
-        self.field_min_max = {'oxygen': [0., 38.], 'glucose': [0.8, 1.], 'H+ ions': [0., 1.], 
-                                'ECM': [0., 1.], 'NP1': [0., 1.], 'NP2': [0., 0.1]}
+        self.field_min_max = {'dummy': [0., 1.]}
         # hacky I know, but make a dict that's got (key,value) reversed from the dict in the Dropdown below
-        self.field_dict = {0:'oxygen', 1:'glucose', 2:'H+ ions', 3:'ECM', 4:'NP1', 5:'NP2'}
+        self.field_dict = {0:'dummy'}
+
         self.mcds_field = Dropdown(
-            options={'oxygen': 0, 'glucose': 1, 'H+ ions': 2, 'ECM': 3, 'NP1': 4, 'NP2': 5},
+            options={'dummy': 0},
             value=0,
             #     description='Field',
-            layout=Layout(width=constWidth)
+           layout=Layout(width=constWidth)
         )
+        # print("substrate __init__: self.mcds_field.value=",self.mcds_field.value)
 #        self.mcds_field.observe(self.mcds_field_cb)
         self.mcds_field.observe(self.mcds_field_changed_cb)
 
@@ -68,7 +68,7 @@ class SubstrateTab(object):
             options=['viridis', 'jet', 'YlOrRd'],
             value='viridis',
             #     description='Field',
-            layout=Layout(width=constWidth)
+           layout=Layout(width=constWidth)
         )
         #self.field_cmap.observe(self.plot_substrate)
 #        self.field_cmap.observe(self.plot_substrate)
@@ -77,7 +77,7 @@ class SubstrateTab(object):
         self.cmap_fixed = Checkbox(
             description='Fix',
             disabled=False,
-            # layout=Layout(width=constWidth2),
+#           layout=Layout(width=constWidth2),
         )
 
         self.save_min_max= Button(
@@ -85,7 +85,7 @@ class SubstrateTab(object):
             button_style='success',  # 'success', 'info', 'warning', 'danger' or ''
             tooltip='Save min/max for this substrate',
             disabled=True,
-            layout=Layout(width='90px')
+           layout=Layout(width='90px')
         )
 
         def save_min_max_cb(b):
@@ -151,7 +151,7 @@ class SubstrateTab(object):
         mcds_params = VBox([self.mcds_field, field_cmap_row2, field_cmap_row3, self.max_frames])  # mcds_dir
 #        mcds_params = VBox([self.mcds_field, field_cmap_row2, field_cmap_row3,])  # mcds_dir
 
-        # self.tab = HBox([mcds_params, self.mcds_plot], layout=tab_layout)
+#        self.tab = HBox([mcds_params, self.mcds_plot], layout=tab_layout)
 #        self.tab = HBox([mcds_params, self.mcds_plot])
 
         help_label = Label('select slider: drag or left/right arrows')
@@ -167,42 +167,95 @@ class SubstrateTab(object):
                             align_items='stretch',
                             flex_direction='row',
                             display='flex'))
-#        self.tab = VBox([row1, row2, self.mcds_plot], layout=tab_layout)
-        self.download_button = Download('mcds.zip', style='warning', icon='cloud-download', 
-                                            tooltip='Download data', cb=self.download_cb)
-        download_row = HBox([self.download_button.w, Label("Download all simulation data (browser must allow pop-ups).")])
-#        self.tab = VBox([row1, row2, self.mcds_plot, self.download_button.w])
-        self.tab = VBox([row1, row2, self.mcds_plot, download_row])
+        self.tab = VBox([row1, row2, self.mcds_plot])
 
+    #---------------------------------------------------
+    def update_dropdown_fields(self, data_dir):
+        # print('update_dropdown_fields called --------')
+        self.output_dir = data_dir
+        tree = None
+        try:
+            fname = os.path.join(self.output_dir, "initial.xml")
+            tree = ET.parse(fname)
+#            return
+        except:
+            print("Cannot open ",fname," to get names of substrate fields.")
+            return
+
+        xml_root = tree.getroot()
+        self.field_min_max = {}
+        self.field_dict = {}
+        dropdown_options = {}
+        uep = xml_root.find('.//variables')
+        comment_str = ""
+        field_idx = 0
+        if (uep):
+            for elm in uep.findall('variable'):
+                # print("-----> ",elm.attrib['name'])
+                self.field_min_max[elm.attrib['name']] = [0., 1.]
+                self.field_dict[field_idx] = elm.attrib['name']
+                dropdown_options[elm.attrib['name']] = field_idx
+                field_idx += 1
+
+#        constWidth = '180px'
+        # print('options=',dropdown_options)
+        self.mcds_field.value=0
+        self.mcds_field.options=dropdown_options
+#         self.mcds_field = Dropdown(
+# #            options={'oxygen': 0, 'glucose': 1},
+#             options=dropdown_options,
+#             value=0,
+#             #     description='Field',
+#            layout=Layout(width=constWidth)
+#         )
+
+    def update_max_frames_expected(self, value):  # called when beginning an interactive Run
+        self.max_frames.value = value  # assumes naming scheme: "snapshot%08d.svg"
+        self.mcds_plot.children[0].max = self.max_frames.value
+
+#    def update(self, rdir):
     def update(self, rdir=''):
         with debug_view:
-            print("SUB: Update", rdir)
-                
+            print("substrates: update rdir=", rdir)        
+
         if rdir:
             self.output_dir = rdir
-        
+
         all_files = sorted(glob.glob(os.path.join(self.output_dir, 'output*.xml')))
         if len(all_files) > 0:
             last_file = all_files[-1]
-            self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "output%08d.xml"
+            self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "snapshot%08d.svg"
 
         with debug_view:
-            print("SUB: added %s files" % len(all_files))
+            print("substrates: added %s files" % len(all_files))
 
-    def download_cb(self):
-        file_xml = os.path.join(self.output_dir, '*.xml')
-        file_mat = os.path.join(self.output_dir, '*.mat')
-        # print('zip up all ',file_str)
-        with zipfile.ZipFile('mcds.zip', 'w') as myzip:
-            for f in glob.glob(file_xml):
-                myzip.write(f, os.path.basename(f)) # 2nd arg avoids full filename path in the archive
-            for f in glob.glob(file_mat):
-                myzip.write(f, os.path.basename(f))
 
-    def update_max_frames(self, _b):
+        # self.output_dir = rdir
+        # if rdir == '':
+        #     # self.max_frames.value = 0
+        #     tmpdir = os.path.abspath('tmpdir')
+        #     self.output_dir = tmpdir
+        #     all_files = sorted(glob.glob(os.path.join(tmpdir, 'output*.xml')))
+        #     if len(all_files) > 0:
+        #         last_file = all_files[-1]
+        #         self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "output%08d.xml"
+        #         self.mcds_plot.update()
+        #     return
+
+        # all_files = sorted(glob.glob(os.path.join(rdir, 'output*.xml')))
+        # if len(all_files) > 0:
+        #     last_file = all_files[-1]
+        #     self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "output%08d.xml"
+        #     self.mcds_plot.update()
+
+
+    def update_max_frames(self,_b):
         self.mcds_plot.children[0].max = self.max_frames.value
 
     def mcds_field_changed_cb(self, b):
+        # print("mcds_field_changed_cb: self.mcds_field.value=",self.mcds_field.value)
+        if (self.mcds_field.value == None):
+            return
         self.field_index = self.mcds_field.value + 4
 
         field_name = self.field_dict[self.mcds_field.value]
@@ -241,7 +294,6 @@ class SubstrateTab(object):
         if not os.path.isfile(full_fname):
 #            print("File does not exist: ", full_fname)
 #            print("No: ", full_fname)
-#            print("No output files yet (or maybe moved to cache)")  # No:  output00000000_microenvironment0.mat
             print("Missing output file")  # No:  output00000000_microenvironment0.mat
 
             return
@@ -265,8 +317,7 @@ class SubstrateTab(object):
         # plt.clf()
         # my_plot = plt.imshow(f.reshape(400,400), cmap='jet', extent=[0,20, 0,20])
     
-#        self.fig = plt.figure(figsize=(7.2,6))  # this strange figsize results in a ~square contour plot
-        self.fig = plt.figure(figsize=(8.4,7))  # this strange figsize results in a ~square contour plot
+        self.fig = plt.figure(figsize=(7.2,6))  # this strange figsize results in a ~square contour plot
         #     fig.set_tight_layout(True)
         #     ax = plt.axes([0, 0.05, 0.9, 0.9 ]) #left, bottom, width, height
         #     ax = plt.axes([0, 0.0, 1, 1 ])
