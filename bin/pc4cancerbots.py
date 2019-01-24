@@ -33,14 +33,14 @@ nanoHUB_flag = "home/nanohub" in os.environ['HOME']  # True/False (running on na
 
 
 def read_config_cb(_b):
-    with debug_view:
-        print("read_config_cb", read_config.value)
+    # with debug_view:
+    #     print("read_config_cb", read_config.value)
         # e.g.  "DEFAULT" -> read_config /Users/heiland/dev/pc4cancerbots/data/nanobio_settings.xml
         #       "t360.xml" -> read_config /Users/heiland/.local/share/pc4cancerbots/t360.xml
 
     if read_config.value is None:  #occurs when a Run just finishes and we update pulldown with the new cache dir??
-        with debug_view:
-            print("NOTE: read_config_cb(): No read_config.value. Returning!")
+        # with debug_view:
+        #     print("NOTE: read_config_cb(): No read_config.value. Returning!")
         return
 
     if os.path.isdir(read_config.value):
@@ -51,12 +51,12 @@ def read_config_cb(_b):
         config_file = read_config.value
 
     if Path(config_file).is_file():
-        with debug_view:
-            print("read_config_cb:  calling fill_gui_params with ",config_file)
+        # with debug_view:
+        #     print("read_config_cb:  calling fill_gui_params with ",config_file)
         fill_gui_params(config_file)  #should verify file exists!
     else:
-        with debug_view:
-            print("read_config_cb: ",config_file, " does not exist.")
+        # with debug_view:
+        #     print("read_config_cb: ",config_file, " does not exist.")
         return
     
     # update visualization tabs
@@ -72,8 +72,8 @@ def read_config_cb(_b):
 def write_config_file(name):
     # Read in the default xml config file, just to get a valid 'root' to populate a new one
     full_filename = os.path.abspath('data/config_cancerbots.xml')
-    with debug_view:
-        print("write_config_file: based on ",full_filename)
+    # with debug_view:
+    #     print("write_config_file: based on ",full_filename)
     tree = ET.parse(full_filename)  # this file cannot be overwritten; part of tool distro
     xml_root = tree.getroot()
     config_tab.fill_xml(xml_root)
@@ -121,26 +121,26 @@ def get_config_files():
     # Only want those dirs that contain output files (.svg, .mat, etc), i.e., handle the
     # situation where a user cancels a Run before it really begins, which may create a (mostly) empty cached dir.
     dirs = [f for f in dirs_all if len(os.listdir(f)) > 5]   # "5" somewhat arbitrary
-    with debug_view:
-        print(dirs)
+    # with debug_view:
+    #     print(dirs)
 
     # Get a list of sorted dirs, according to creation timestamp (newest -> oldest)
     sorted_dirs = sorted(dirs, key=os.path.getctime, reverse=True)
-    with debug_view:
-        print(sorted_dirs)
+    # with debug_view:
+    #     print(sorted_dirs)
     # Get a list of timestamps associated with each dir
     sorted_dirs_dates = [str(datetime.datetime.fromtimestamp(os.path.getctime(x))) for x in sorted_dirs]
     # Create a dict of {timestamp:dir} pairs
     cached_file_dict = dict(zip(sorted_dirs_dates, sorted_dirs))
     cf.update(cached_file_dict)
-    with debug_view:
-        print(cf)
+    # with debug_view:
+    #     print(cf)
     return cf
 
 # Using params in a config (.xml) file, fill GUI widget values in each of the "input" tabs
 def fill_gui_params(config_file):
-    with debug_view:
-        print("fill_gui_params: filling with ",config_file)
+    # with debug_view:
+    #     print("fill_gui_params: filling with ",config_file)
     tree = ET.parse(config_file)
     xml_root = tree.getroot()
     config_tab.fill_gui(xml_root)
@@ -148,8 +148,8 @@ def fill_gui_params(config_file):
 
 
 def run_done_func(s, rdir):
-    with debug_view:
-        print('run_done_func: results in', rdir)
+    # with debug_view:
+    #     print('run_done_func: results in', rdir)
     
     if nanoHUB_flag:
         # Email the user that their job has completed
@@ -171,14 +171,14 @@ def run_done_func(s, rdir):
     # and update visualizations
     svg.update(rdir)
     sub.update(rdir)
-    with debug_view:
-        print('RDF DONE')
+    # with debug_view:
+    #     print('RDF DONE')
 
 
 # This is used now for the RunCommand
 def run_sim_func(s):
-    with debug_view:
-        print('run_sim_func')
+    # with debug_view:
+    #     print('run_sim_func')
 
     # make sure we are where we started
     os.chdir(homedir)
@@ -208,7 +208,7 @@ def run_sim_func(s):
         if remote_cb.value:
             # s.run(run_name, "-n 8 -w 1440 pc4nanobio-r77 config.xml")  # will wait in standby queue forever
             # s.run(run_name, "-w 7200 pc4nanobio-r77 config.xml") 
-            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerbots-r77 config.xml") 
+            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerbots-r7 config.xml") 
         else:
             # read_config.index = 0   # reset Dropdown 'Load Config' to 'DEFAULT' when Run interactively
             s.run(run_name, "--local ../bin/cancerbots config.xml")
@@ -218,8 +218,8 @@ def run_sim_func(s):
         # read_config.index = 0   
         s.run("../bin/cancerbots config.xml", runname=run_name)
 
-    with debug_view:
-        print('run_sim_func DONE')
+    # with debug_view:
+    #     print('run_sim_func DONE')
 
 
 def outcb(s):

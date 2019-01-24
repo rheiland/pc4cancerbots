@@ -215,8 +215,8 @@ class SubstrateTab(object):
 
 #    def update(self, rdir):
     def update(self, rdir=''):
-        with debug_view:
-            print("substrates: update rdir=", rdir)        
+        # with debug_view:
+        #     print("substrates: update rdir=", rdir)        
 
         if rdir:
             self.output_dir = rdir
@@ -226,8 +226,8 @@ class SubstrateTab(object):
             last_file = all_files[-1]
             self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "snapshot%08d.svg"
 
-        with debug_view:
-            print("substrates: added %s files" % len(all_files))
+        # with debug_view:
+        #     print("substrates: added %s files" % len(all_files))
 
 
         # self.output_dir = rdir

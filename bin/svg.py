@@ -90,8 +90,8 @@ class SVGTab(object):
         self.tab = VBox([row1, self.svg_plot, download_row])
 
     def update(self, rdir=''):
-        with debug_view:
-            print("SVG: update rdir=", rdir)        
+        # with debug_view:
+        #     print("SVG: update rdir=", rdir)        
 
         if rdir:
             self.output_dir = rdir
@@ -101,8 +101,8 @@ class SVGTab(object):
             last_file = all_files[-1]
             self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "snapshot%08d.svg"
 
-        with debug_view:
-            print("SVG: added %s files" % len(all_files))
+        # with debug_view:
+        #     print("SVG: added %s files" % len(all_files))
 
     def download_cb(self):
         file_str = os.path.join(self.output_dir, '*.svg')
@@ -137,8 +137,8 @@ class SVGTab(object):
         current_frame = frame
         fname = "snapshot%08d.svg" % frame
         full_fname = os.path.join(self.output_dir, fname)
-        with debug_view:
-            print("plot_svg:", full_fname) 
+        # with debug_view:
+        #     print("plot_svg:", full_fname) 
         if not os.path.isfile(full_fname):
             print("Missing output file")   
             return
