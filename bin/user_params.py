@@ -85,18 +85,6 @@ class UserTab(object):
           step=0.1,
           style=style, layout=layout)
 
-        self.attached_worker_migration_bias = FloatText(
-          description='attached_worker_migration_bias',
-          value=1.0,
-          step=0.1,
-          style=style, layout=layout)
-
-        self.unattached_worker_migration_bias = FloatText(
-          description='unattached_worker_migration_bias',
-          value=1.0,
-          step=0.1,
-          style=style, layout=layout)
-
         self.worker_relative_adhesion = FloatText(
           description='worker_relative_adhesion',
           value=0,
@@ -223,8 +211,6 @@ class UserTab(object):
           HBox([self.worker_apoptosis_rate, Label('1/min')]), 
           HBox([self.worker_motility_persistence_time, Label('min')]), 
           HBox([self.worker_migration_speed, Label('micron/min')]), 
-          HBox([self.attached_worker_migration_bias, Label('min')]), 
-          HBox([self.unattached_worker_migration_bias, Label('min')]), 
           HBox([self.worker_relative_adhesion, Label('')]), 
           HBox([self.worker_relative_repulsion, Label('')]), 
           HBox([self.elastic_coefficient, Label('1/min')]), 
@@ -260,8 +246,6 @@ class UserTab(object):
         self.worker_apoptosis_rate.value = float(uep.find('.//worker_apoptosis_rate').text)
         self.worker_motility_persistence_time.value = float(uep.find('.//worker_motility_persistence_time').text)
         self.worker_migration_speed.value = float(uep.find('.//worker_migration_speed').text)
-        self.attached_worker_migration_bias.value = float(uep.find('.//attached_worker_migration_bias').text)
-        self.unattached_worker_migration_bias.value = float(uep.find('.//unattached_worker_migration_bias').text)
         self.worker_relative_adhesion.value = float(uep.find('.//worker_relative_adhesion').text)
         self.worker_relative_repulsion.value = float(uep.find('.//worker_relative_repulsion').text)
         self.elastic_coefficient.value = float(uep.find('.//elastic_coefficient').text)
@@ -297,8 +281,6 @@ class UserTab(object):
         uep.find('.//worker_apoptosis_rate').text = str(self.worker_apoptosis_rate.value)
         uep.find('.//worker_motility_persistence_time').text = str(self.worker_motility_persistence_time.value)
         uep.find('.//worker_migration_speed').text = str(self.worker_migration_speed.value)
-        uep.find('.//attached_worker_migration_bias').text = str(self.attached_worker_migration_bias.value)
-        uep.find('.//unattached_worker_migration_bias').text = str(self.unattached_worker_migration_bias.value)
         uep.find('.//worker_relative_adhesion').text = str(self.worker_relative_adhesion.value)
         uep.find('.//worker_relative_repulsion').text = str(self.worker_relative_repulsion.value)
         uep.find('.//elastic_coefficient').text = str(self.elastic_coefficient.value)
