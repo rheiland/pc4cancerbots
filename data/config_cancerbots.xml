@@ -120,7 +120,7 @@
 		<!-- for main --> 
 		<therapy_activation_time type="double" units="min">10080</therapy_activation_time> 
 			<!-- activate in 7 days --> 
-		<save_interval_after_therapy_start type="double" units="min">3</save_interval_after_therapy_start>
+		<save_interval_after_therapy_start type="double" units="min">60</save_interval_after_therapy_start>
 		
 		<!-- cargo cell setup --> 
 		<cargo_o2_relative_uptake type="double" units="dimensionless">0.1</cargo_o2_relative_uptake>
@@ -135,8 +135,6 @@
 		<worker_apoptosis_rate type="double" units="1/min">0</worker_apoptosis_rate>
 		<worker_motility_persistence_time type="double" units="min">5.0</worker_motility_persistence_time>
 		<worker_migration_speed type="double" units="micron/min">2.0</worker_migration_speed>
-		<attached_worker_migration_bias type="double" units="min">1.0</attached_worker_migration_bias>
-		<unattached_worker_migration_bias type="double" units="min">1.0</unattached_worker_migration_bias>
 		<worker_relative_adhesion type="double" units="dimensionless">0</worker_relative_adhesion>
 		<worker_relative_repulsion type="double" units="dimensionless">5</worker_relative_repulsion> 
 
