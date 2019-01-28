@@ -276,7 +276,10 @@ homedir = os.getcwd()
 if nanoHUB_flag:
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, remote_cb, run_button.w])
-    gui = widgets.VBox(children=[read_config, tabs, remote_cb, run_button.w])
+
+    # Let's not allow for batch runs for this tool.
+    # gui = widgets.VBox(children=[read_config, tabs, remote_cb, run_button.w])
+    gui = widgets.VBox(children=[read_config, tabs, run_button.w])
 else:
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, run_button.w])
     gui = widgets.VBox(children=[read_config, tabs, run_button.w])
