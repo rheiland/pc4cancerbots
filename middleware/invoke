@@ -1,4 +1,4 @@
 #!/bin/sh
 
-/usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool pc4cancerbots.ipynb" -t pc4cancerbots 
+/usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool pc4cancerbots.ipynb" -t pc4cancerbots \
                          -u anaconda3-5.1
