@@ -9,6 +9,8 @@ import matplotlib.colors as mplc
 import scipy.io
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import glob
+import zipfile
+from hublib.ui import Download
 from debug import debug_view 
 
 
@@ -167,7 +169,12 @@ class SubstrateTab(object):
                             align_items='stretch',
                             flex_direction='row',
                             display='flex'))
-        self.tab = VBox([row1, row2, self.mcds_plot])
+        self.download_button = Download('mcds.zip', style='warning', icon='cloud-download', 
+                                            tooltip='Download data', cb=self.download_cb)
+        download_row = HBox([self.download_button.w, Label("Download all simulation data (browser must allow pop-ups).")])
+
+#        self.tab = VBox([row1, row2, self.mcds_plot])
+        self.tab = VBox([row1, row2, self.mcds_plot, download_row])
 
     #---------------------------------------------------
     def update_dropdown_fields(self, data_dir):
@@ -248,6 +255,15 @@ class SubstrateTab(object):
         #     self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "output%08d.xml"
         #     self.mcds_plot.update()
 
+    def download_cb(self):
+        file_xml = os.path.join(self.output_dir, '*.xml')
+        file_mat = os.path.join(self.output_dir, '*.mat')
+        # print('zip up all ',file_str)
+        with zipfile.ZipFile('mcds.zip', 'w') as myzip:
+            for f in glob.glob(file_xml):
+                myzip.write(f, os.path.basename(f)) # 2nd arg avoids full filename path in the archive
+            for f in glob.glob(file_mat):
+                myzip.write(f, os.path.basename(f))
 
     def update_max_frames(self,_b):
         self.mcds_plot.children[0].max = self.max_frames.value
