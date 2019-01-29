@@ -171,7 +171,7 @@ class SubstrateTab(object):
                             display='flex'))
         self.download_button = Download('mcds.zip', style='warning', icon='cloud-download', 
                                             tooltip='Download data', cb=self.download_cb)
-        download_row = HBox([self.download_button.w, Label("Download all simulation data (browser must allow pop-ups).")])
+        download_row = HBox([self.download_button.w, Label("Download all substrate data (browser must allow pop-ups).")])
 
 #        self.tab = VBox([row1, row2, self.mcds_plot])
         self.tab = VBox([row1, row2, self.mcds_plot, download_row])

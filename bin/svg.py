@@ -84,7 +84,7 @@ class SVGTab(object):
 
         self.download_button = Download('svg.zip', style='warning', icon='cloud-download', 
                                         tooltip='You need to allow pop-ups in your browser', cb=self.download_cb)
-        download_row = HBox([self.download_button.w, Label("Download all plots (browser must allow pop-ups).")])
+        download_row = HBox([self.download_button.w, Label("Download all cell plots (browser must allow pop-ups).")])
 #        self.tab = VBox([row1, self.svg_plot, self.download_button.w], layout=tab_layout)
 #        self.tab = VBox([row1, self.svg_plot, self.download_button.w])
         self.tab = VBox([row1, self.svg_plot, download_row])
