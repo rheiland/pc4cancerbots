@@ -71,7 +71,7 @@ def read_config_cb(_b):
 # Using the param values in the GUI, write a new .xml config file
 def write_config_file(name):
     # Read in the default xml config file, just to get a valid 'root' to populate a new one
-    full_filename = os.path.abspath('data/config_cancerbots.xml')
+    full_filename = os.path.abspath('data/PhysiCell_settings.xml')
     # with debug_view:
     #     print("write_config_file: based on ",full_filename)
     tree = ET.parse(full_filename)  # this file cannot be overwritten; part of tool distro
@@ -93,7 +93,7 @@ def write_config_file_cb(b):
 # Fill the "Load Config" dropdown widget with valid cached results (and 
 # default & previous config options)
 def get_config_files():
-    cf = {'DEFAULT': os.path.abspath('data/config_cancerbots.xml')}
+    cf = {'DEFAULT': os.path.abspath('data/PhysiCell_settings.xml')}
     dirname = os.path.expanduser('~/.local/share/pc4cancerbots')
     try:
         os.makedirs(dirname)
@@ -211,12 +211,12 @@ def run_sim_func(s):
             s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerbots-r7 config.xml") 
         else:
             # read_config.index = 0   # reset Dropdown 'Load Config' to 'DEFAULT' when Run interactively
-            s.run(run_name, "--local ../bin/cancerbots config.xml")
+            s.run(run_name, "--local ../bin/myproj config.xml")
     else:
         # reset Dropdown 'Load Config' to 'DEFAULT' when Run interactively
         # Warning: this will trigger read_config_cb() !!
         # read_config.index = 0   
-        s.run("../bin/cancerbots config.xml", runname=run_name)
+        s.run("../bin/myproj config.xml", runname=run_name)
 
     # with debug_view:
     #     print('run_sim_func DONE')
