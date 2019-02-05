@@ -22,7 +22,7 @@ tab_layout = widgets.Layout(width='auto',   # border='2px solid black',
 # create the tabs, but don't display yet
 config_tab = ConfigTab()
 
-full_filename = os.path.abspath('data/config_cancerbots.xml')
+full_filename = os.path.abspath('data/PhysiCell_settings.xml')
 tree = ET.parse(full_filename)  # this file cannot be overwritten; part of tool distro
 xml_root = tree.getroot()
 user_tab = UserTab()
