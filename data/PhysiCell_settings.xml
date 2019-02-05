@@ -115,12 +115,12 @@
 	</save>
 	
 	<user_parameters>
-		<random_seed type="int" units="dimensionless">0</random_seed> 
+		<random_seed type="int" units="dimensionless" hidden="true">0</random_seed> 
 		
 		<!-- for main --> 
-		<therapy_activation_time type="double" units="min">10080</therapy_activation_time> 
+		<therapy_activation_time type="double" units="min" description="time to start therapy">10080</therapy_activation_time> 
 			<!-- activate in 7 days --> 
-		<save_interval_after_therapy_start type="double" units="min">60</save_interval_after_therapy_start>
+		<save_interval_after_therapy_start type="double" units="min" description="post therapy save time intervals">60</save_interval_after_therapy_start>
 		
 		<!-- cargo cell setup --> 
 		<cargo_o2_relative_uptake type="double" units="dimensionless">0.1</cargo_o2_relative_uptake>
