@@ -8,10 +8,16 @@ import sys
 import math
 import xml.etree.ElementTree as ET
 
-if (len(sys.argv) < 2):
-    print("Usage: python " + sys.argv[0] + " <config-file.xml>")
+num_args = len(sys.argv)
+print("num_args=",num_args)
+if ( num_args < 2):
+    print("Usage: python " + sys.argv[0] + " <config-file.xml> [<gui-file.py>]")
     sys.exit(1)
 config_file = sys.argv[1]
+
+if ( num_args == 3):
+    gui_file = sys.argv[2]
+
 
 # First, let's use this config file name in the (main) mygui.py module:
 # f_main = open('mygui.py', 'r')
@@ -20,18 +26,21 @@ config_file = sys.argv[1]
 #         print(line)
 # #        break
 #         sys.exit(1)
-with open('mygui.py') as f:
-#  newText = f.read().replace('myconfig.xml', config_file) # rwh todo: don't assume this string; find line
-  file_str = f.read()
-  idx = file_str.find('main_xml_filename')  # verify > -1
-  file_pre = file_str[:idx] 
-  idx2 = file_str[idx:].find('\n')
-  file_post = file_str[idx+idx2:] 
+if (num_args == 3):
+#    with open('mygui.py') as f:
+    with open(gui_file) as f:
+    #  newText = f.read().replace('myconfig.xml', config_file) # rwh todo: don't assume this string; find line
+        file_str = f.read()
+        idx = file_str.find('main_xml_filename')  # verify > -1
+        file_pre = file_str[:idx] 
+        idx2 = file_str[idx:].find('\n')
+        file_post = file_str[idx+idx2:] 
 
-with open('mygui.py', "w") as f:
-  f.write(file_pre)
-  f.write("main_xml_filename = '" + config_file + "'")
-  f.write(file_post)
+#    with open('mygui.py', "w") as f:
+    with open(gui_file, "w") as f:
+        f.write(file_pre)
+        f.write("main_xml_filename = '" + config_file + "'")
+        f.write(file_post)
 
 user_tab_header = """ 
 # This file is auto-generated from a Python script that parses a PhysiCell configuration (.xml) file.
@@ -104,9 +113,30 @@ widgets = {"double":"FloatText", "int":"IntText", "bool":"Checkbox", "string":"T
 type_cast = {"double":"float", "int":"int", "bool":"bool", "string":""}
 vbox_str = "\n" + indent + "self.tab = VBox([\n"
 
+# TODO: cast attributes to lower case before doing equality tests; perform more testing!
+
+italicize_flag = False
+tag_list = []
 for child in uep:
     print(child.tag, child.attrib)
+    if child.tag in tag_list:
+        print("-------> Warning: duplicate tag!  ", child.tag)
+        continue
+    else:
+        tag_list.append(child.tag)
     units_str = ""
+    describe_str = ""
+    if 'hidden' in child.attrib.keys() and (child.attrib['hidden'].lower() == "true"):   # do we want to hide this from the user?
+        print("  HIDE this parameter from the GUI: ", child.tag)
+        continue
+
+    describe_str = ''
+    if 'description' in child.attrib.keys():
+        if italicize_flag:
+            describe_str = child.attrib['description'] 
+            describe_str = describe_str.replace(" ","\ ")
+        else:
+            describe_str = ' (' + child.attrib['description'] + ')'
     if 'units' in child.attrib.keys():
         if child.attrib['units'] != "dimensionless" and child.attrib['units'] != "none":
             units_str = child.attrib['units']
@@ -153,13 +183,23 @@ for child in uep:
 
             # Booleans
             elif child.attrib['type'] == "bool":
-                pass
+                user_tab_header += indent2 + "value=" + child.text + ",\n"
+            
+            # Strings
+            elif child.attrib['type'] == "string":
+                user_tab_header += indent2 + "value='" + child.text + "',\n"
 
 
             # Finally, append the info at the end of this widget
             user_tab_header += indent2 + "style=style, layout=layout)\n"
 
-            vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "')]), \n"
+            if italicize_flag:
+                if len(describe_str) > 0:
+                    vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "'), " + " Label(r'\((" + describe_str + "\))')]), \n"
+                else:
+                    vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "'), ]), \n"
+            else:
+                vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + describe_str + "')]), \n"
 
             # float, int, bool
             fill_gui_str += indent + full_name + ".value = " + type_cast[child.attrib['type']] + "(uep.find('.//" + child.tag + "').text)\n"
@@ -173,12 +213,13 @@ user_tab_file = "user_params.py"
 print("\n --------------------------------- ")
 print("Generated a new: ", user_tab_file)
 print()
-print("If this is your first time:")
-print("Run the GUI via:  jupyter notebook mygui.ipynb")
+#print("If this is your first time:")
+#print("Run the GUI via:  jupyter notebook mygui.ipynb")
+print("Test the minimal GUI via:  jupyter notebook test_gui.ipynb")
 print("run the Jupyter menu item:  Cell -> Run All")
 print()
-print("If you already have a GUI running and you just want to use new User Params:")
-print("run the Jupyter menu item:  Kernel -> Restart & Run All")
+print("(or, if you already have a previous GUI running and want to see new params:")
+print("run the Jupyter menu item:  Kernel -> Restart & Run All)")
 print()
 fp= open(user_tab_file, 'w')
 fp.write(user_tab_header)
