@@ -11,13 +11,25 @@ import xml.etree.ElementTree as ET
 num_args = len(sys.argv)
 print("num_args=",num_args)
 if ( num_args < 2):
-    print("Usage: python " + sys.argv[0] + " <config-file.xml> [<gui-file.py>]")
+#    print("Usage: python " + sys.argv[0] + " <config-file.xml> [<gui-file.py>]")
+    print("Usage: python " + sys.argv[0] + " <config-file.xml> [<gui-file.py>] [<colorname1>] [<colorname2>]")
     sys.exit(1)
 config_file = sys.argv[1]
+colorname1 = 'lightgreen'
+colorname2 = 'tan'
 
 if ( num_args == 3):
     gui_file = sys.argv[2]
-
+elif ( num_args ==4 ):
+    print("Usage: python " + sys.argv[0] + " <config-file.xml> <gui-file.py> <colorname1> <colorname2>")
+    sys.exit(1)
+elif ( num_args == 5):
+    gui_file = sys.argv[2]
+    colorname1 = sys.argv[3]
+    colorname2 = sys.argv[4]
+elif ( num_args > 5):
+    print("Usage: python " + sys.argv[0] + " <config-file.xml> [<gui-file.py>] [<colorname1>] [<colorname2>]")
+    sys.exit(1)
 
 # First, let's use this config file name in the (main) mygui.py module:
 # f_main = open('mygui.py', 'r')
@@ -48,7 +60,7 @@ user_tab_header = """
 # Edit at your own risk.
 #
 import os
-from ipywidgets import Label,Text,Checkbox,Button,HBox,VBox,FloatText,IntText,BoundedIntText,BoundedFloatText
+from ipywidgets import Label,Text,Checkbox,Button,HBox,VBox,FloatText,IntText,BoundedIntText,BoundedFloatText,Layout,Box
     
 class UserTab(object):
 
@@ -112,10 +124,18 @@ indent2 = "          "
 widgets = {"double":"FloatText", "int":"IntText", "bool":"Checkbox", "string":"Text"}
 type_cast = {"double":"float", "int":"int", "bool":"bool", "string":""}
 vbox_str = "\n" + indent + "self.tab = VBox([\n"
+#param_desc_buttons_str = "\n" 
+desc_buttons_str = "\n" 
+row_str = "\n"
+box_str = "\n" + indent + "box_layout = Layout(display='flex', flex_flow='row', align_items='stretch', width='100%')\n"
+#        box1 = Box(children=row1, layout=box_layout)\n"
 
 # TODO: cast attributes to lower case before doing equality tests; perform more testing!
 
+param_desc_count = 0
 italicize_flag = False
+desc_as_button_flag = True
+#desc_as_button_flag = False
 tag_list = []
 for child in uep:
     print(child.tag, child.attrib)
@@ -131,12 +151,24 @@ for child in uep:
         continue
 
     describe_str = ''
+    desc_row_name = None
     if 'description' in child.attrib.keys():
         if italicize_flag:
             describe_str = child.attrib['description'] 
             describe_str = describe_str.replace(" ","\ ")
+        elif desc_as_button_flag:
+            describe_str = child.attrib['description']
+            param_desc_count += 1
+            desc_row_name = "desc_row" + str(param_desc_count)
+            # desc_buttons_str += indent + desc_row_name + "[ \n"
+            desc_buttons_str += indent + desc_row_name + " = " + "Button(description='" + describe_str + "', disabled=True, layout=param_button_layout) \n"
+            if (param_desc_count % 2):
+                desc_buttons_str += indent + desc_row_name + ".style.button_color = '" + colorname1 + "'\n"
+            else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
+                desc_buttons_str += indent + desc_row_name + ".style.button_color = '" + colorname2 + "'\n"
         else:
             describe_str = ' (' + child.attrib['description'] + ')'
+
     if 'units' in child.attrib.keys():
         if child.attrib['units'] != "dimensionless" and child.attrib['units'] != "none":
             units_str = child.attrib['units']
@@ -198,6 +230,13 @@ for child in uep:
                     vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "'), " + " Label(r'\((" + describe_str + "\))')]), \n"
                 else:
                     vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "'), ]), \n"
+            elif desc_as_button_flag and desc_row_name:
+                row_name = "row" + str(param_desc_count)
+                row_str += indent +  row_name + " = [" + full_name + ", Label('" + units_str + "' , layout=Layout(flex='1 1 auto', width='auto')), " + desc_row_name + "] \n"
+                box_name = "box" + str(param_desc_count)
+                box_str += indent + box_name + " = Box(children=" + row_name + ", layout=box_layout)\n"
+#        box1 = Box(children=row1, layout=box_layout)\n"
+                vbox_str += indent2 + box_name + ",\n"
             else:
                 vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + describe_str + "')]), \n"
 
@@ -223,6 +262,11 @@ print("run the Jupyter menu item:  Kernel -> Restart & Run All)")
 print()
 fp= open(user_tab_file, 'w')
 fp.write(user_tab_header)
+fp.write("\n" + indent + "param_button_layout={'width':'400px'} \n")
+#fp.write(param_desc_buttons_str)
+fp.write(desc_buttons_str)
+fp.write(row_str)
+fp.write(box_str)
 fp.write(vbox_str)
 fp.write(fill_gui_str)
 fp.write(fill_xml_str)
