@@ -121,7 +121,7 @@
 		<therapy_activation_time type="double" units="min" 
 			description="time at which worker and cargo cells are injected">10080</therapy_activation_time> 
 			<!-- activate in 7 days --> 
-		<number_of_injected_cells type="int" units="dimensionless" 
+		<number_of_injected_cells type="int" units="none" 
 			description="number of injected cells for therapy">500</number_of_injected_cells>
 		<worker_fraction type="double" units="dimensionless" 
 			description="fraction of injected cells that are workers">0.10</worker_fraction>
@@ -140,7 +140,7 @@
 			description="cargo cell repulsion (relative to cancer cells)">5</cargo_relative_repulsion> 
 		
 		<!-- worker cell setup --> 
-		<worker_o2_relative_uptake type="double" units="1/min" 
+		<worker_o2_relative_uptake type="double" units="dimensionless" 
 			description="worker cell oxygen uptake rate (relative to cancer cells)">0.1</worker_o2_relative_uptake>
 		<worker_apoptosis_rate type="double" units="1/min" 
 			description="apoptosis rate for workers">0</worker_apoptosis_rate>
@@ -153,11 +153,12 @@
 			description="motility persistence time for workers">5.0</worker_motility_persistence_time>
 		<worker_migration_speed type="double" units="micron/min" 
 			description="migration speed for workers">2.0</worker_migration_speed>
-		<attached_worker_migration_bias type="double" 
+		<attached_worker_migration_bias type="none" 
 			description="migration bias for attached workers">0.5</attached_worker_migration_bias>
-		<unattached_worker_migration_bias type="double" 
+		<unattached_worker_migration_bias type="none" 
 			description="migration bias for unattached workers">0.5</unattached_worker_migration_bias>
-		<motility_shutdown_detection_threshold type="double" units="dimensionless" description="worker stops if chemoattractant &lt; threshold">0.001</motility_shutdown_detection_threshold>
+		<motility_shutdown_detection_threshold type="double" units="dimensionless" 
+			description="worker stops if chemoattractant &lt; threshold">0.001</motility_shutdown_detection_threshold>
 		
 		<!-- adhesion -->
 		<elastic_coefficient type="double" units="1/min" 
