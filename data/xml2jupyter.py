@@ -72,8 +72,14 @@ class UserTab(object):
         tab_height = '500px'
         stepsize = 10
 
-        style = {'description_width': '250px'}
+        #style = {'description_width': '250px'}
+        style = {'description_width': '25%'}
         layout = {'width': '400px'}
+
+        name_button_layout={'width':'25%'}
+        widget_layout = {'width': '15%'}
+        units_button_layout ={'width':'15%'}
+        desc_button_layout={'width':'45%'}
 """
 
 """
@@ -125,17 +131,21 @@ widgets = {"double":"FloatText", "int":"IntText", "bool":"Checkbox", "string":"T
 type_cast = {"double":"float", "int":"int", "bool":"bool", "string":""}
 vbox_str = "\n" + indent + "self.tab = VBox([\n"
 #param_desc_buttons_str = "\n" 
+name_buttons_str = "\n" 
+units_buttons_str = "\n" 
 desc_buttons_str = "\n" 
 row_str = "\n"
 box_str = "\n" + indent + "box_layout = Layout(display='flex', flex_flow='row', align_items='stretch', width='100%')\n"
+
 #        box1 = Box(children=row1, layout=box_layout)\n"
 
 # TODO: cast attributes to lower case before doing equality tests; perform more testing!
 
-param_desc_count = 0
-italicize_flag = False
-desc_as_button_flag = True
-#desc_as_button_flag = False
+param_count = 0
+#param_desc_count = 0
+name_count = 0
+units_count = 0
+
 tag_list = []
 for child in uep:
     print(child.tag, child.attrib)
@@ -150,41 +160,67 @@ for child in uep:
         print("  HIDE this parameter from the GUI: ", child.tag)
         continue
 
+#    names_str = ''
+#    units_str = ''
     describe_str = ''
-    desc_row_name = None
+#    desc_row_name = None
+    desc_row_name = ''
+    units_btn_name = ''
+    param_count += 1
     if 'description' in child.attrib.keys():
-        if italicize_flag:
-            describe_str = child.attrib['description'] 
-            describe_str = describe_str.replace(" ","\ ")
-        elif desc_as_button_flag:
-            describe_str = child.attrib['description']
-            param_desc_count += 1
-            desc_row_name = "desc_row" + str(param_desc_count)
-            # desc_buttons_str += indent + desc_row_name + "[ \n"
-            desc_buttons_str += indent + desc_row_name + " = " + "Button(description='" + describe_str + "', disabled=True, layout=param_button_layout) \n"
-            if (param_desc_count % 2):
-                desc_buttons_str += indent + desc_row_name + ".style.button_color = '" + colorname1 + "'\n"
-            else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
-                desc_buttons_str += indent + desc_row_name + ".style.button_color = '" + colorname2 + "'\n"
-        else:
-            describe_str = ' (' + child.attrib['description'] + ')'
+        describe_str = child.attrib['description']
+    else:
+        describe_str = ""
+    desc_row_name = "desc_button" + str(param_count)
+    desc_buttons_str += indent + desc_row_name + " = " + "Button(description='" + describe_str + "', disabled=True, layout=desc_button_layout) \n"
+    if (param_count % 2):
+        desc_buttons_str += indent + desc_row_name + ".style.button_color = '" + colorname1 + "'\n"
+    else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
+        desc_buttons_str += indent + desc_row_name + ".style.button_color = '" + colorname2 + "'\n"
 
     if 'units' in child.attrib.keys():
         if child.attrib['units'] != "dimensionless" and child.attrib['units'] != "none":
-            units_str = child.attrib['units']
+#            units_str = child.attrib['units']
+            units_count += 1
+            units_btn_name = "units_button" + str(units_count)
+            units_buttons_str += indent + units_btn_name + " = " + "Button(description='" + child.attrib['units'] + "', disabled=True, layout=units_button_layout) \n"
+            if (param_count % 2):
+                units_buttons_str += indent + units_btn_name + ".style.button_color = '" + colorname1 + "'\n"
+            else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
+                units_buttons_str += indent + units_btn_name + ".style.button_color = '" + colorname2 + "'\n"
+        else:
+            units_count += 1
+            units_btn_name = "units_button" + str(units_count)
+            units_buttons_str += indent + units_btn_name + " = " + "Button(description='" +  "', disabled=True, layout=units_button_layout) \n"
+            if (param_count % 2):
+                units_buttons_str += indent + units_btn_name + ".style.button_color = '" + colorname1 + "'\n"
+            else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
+                units_buttons_str += indent + units_btn_name + ".style.button_color = '" + colorname2 + "'\n"
+    else:
+        units_count += 1
+        units_btn_name = "units_button" + str(units_count)
+        units_buttons_str += indent + units_btn_name + " = " + "Button(description='" +  "', disabled=True, layout=units_button_layout) \n"
+        if (param_count % 2):
+            units_buttons_str += indent + units_btn_name + ".style.button_color = '" + colorname1 + "'\n"
+        else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
+            units_buttons_str += indent + units_btn_name + ".style.button_color = '" + colorname2 + "'\n"
+
     if 'type' in child.attrib.keys():
 #             self.therapy_activation_time = BoundedFloatText(
 #            min=0., max=100000000, step=stepsize,
         full_name = "self." + child.tag
+        name_count += 1
         if child.attrib['type'] not in widgets.keys():
-            print("    *** Warning - Invalid type: " + child.attrib['type'])
+            print("    *** Error - Invalid type: " + child.attrib['type'])
+            sys.exit(1)
         else:    
-            # self.default_cell_speed = FloatText(
-            #   description='default_cell_speed',
-            #   step=0.02,
-            #   style=style, layout=layout)
+            param_name_button = "param_name" + str(name_count)
+            user_tab_header += "\n" + indent + param_name_button + " = " + "Button(description='" + child.tag + "', disabled=True, layout=name_button_layout)\n"
+            if (param_count % 2):
+                user_tab_header += indent + param_name_button + ".style.button_color = '" + colorname1 + "'\n"
+            else:  # rf.  https://www.w3schools.com/colors/colors_names.asp
+                user_tab_header += indent + param_name_button + ".style.button_color = '" + colorname2 + "'\n"
             user_tab_header += "\n" + indent + full_name + " = " + widgets[child.attrib['type']] + "(\n"
-            user_tab_header += indent2 + "description='" + child.tag + "',\n"
 
             # Try to calculate and provide a "good" delta step (for the tiny "up/down" arrows on a numeric widget)
             if child.attrib['type'] == "double":
@@ -215,6 +251,15 @@ for child in uep:
 
             # Booleans
             elif child.attrib['type'] == "bool":
+                if (child.text.lower() == "true"):
+                    child.text = "True"
+                elif (child.text.lower() == "false"):
+                    child.text = "False"
+                else:
+                    print(" --- ERROR: bool must be True or False, not ", child.text)
+                    sys.exit(1)
+
+                print('bool: ',child.text)
                 user_tab_header += indent2 + "value=" + child.text + ",\n"
             
             # Strings
@@ -223,25 +268,19 @@ for child in uep:
 
 
             # Finally, append the info at the end of this widget
-            user_tab_header += indent2 + "style=style, layout=layout)\n"
+            user_tab_header += indent2 + "style=style, layout=widget_layout)\n"
 
-            if italicize_flag:
-                if len(describe_str) > 0:
-                    vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "'), " + " Label(r'\((" + describe_str + "\))')]), \n"
-                else:
-                    vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + "'), ]), \n"
-            elif desc_as_button_flag and desc_row_name:
-                row_name = "row" + str(param_desc_count)
-                row_str += indent +  row_name + " = [" + full_name + ", Label('" + units_str + "' , layout=Layout(flex='1 1 auto', width='auto')), " + desc_row_name + "] \n"
-                box_name = "box" + str(param_desc_count)
-                box_str += indent + box_name + " = Box(children=" + row_name + ", layout=box_layout)\n"
-#        box1 = Box(children=row1, layout=box_layout)\n"
-                vbox_str += indent2 + box_name + ",\n"
-            else:
-                vbox_str += indent2 + "HBox([" + full_name + ", Label('" + units_str + describe_str + "')]), \n"
+            row_name = "row" + str(param_count)
+            row_str += indent +  row_name + " = [" + param_name_button + ", " + full_name + ", " + units_btn_name + ", " + desc_row_name + "] \n"
+            box_name = "box" + str(param_count)
+            box_str += indent + box_name + " = Box(children=" + row_name + ", layout=box_layout)\n"
+            vbox_str += indent2 + box_name + ",\n"
 
             # float, int, bool
-            fill_gui_str += indent + full_name + ".value = " + type_cast[child.attrib['type']] + "(uep.find('.//" + child.tag + "').text)\n"
+            if (type_cast[child.attrib['type']] == "bool"):
+                fill_gui_str += indent + full_name + ".value = ('true' == (uep.find('.//" + child.tag + "').text.lower()) )\n"
+            else:
+                fill_gui_str += indent + full_name + ".value = " + type_cast[child.attrib['type']] + "(uep.find('.//" + child.tag + "').text)\n"
 
             fill_xml_str += indent + "uep.find('.//" + child.tag + "').text = str("+ full_name + ".value)\n"
 
@@ -262,8 +301,7 @@ print("run the Jupyter menu item:  Kernel -> Restart & Run All)")
 print()
 fp= open(user_tab_file, 'w')
 fp.write(user_tab_header)
-fp.write("\n" + indent + "param_button_layout={'width':'400px'} \n")
-#fp.write(param_desc_buttons_str)
+fp.write(units_buttons_str)
 fp.write(desc_buttons_str)
 fp.write(row_str)
 fp.write(box_str)
