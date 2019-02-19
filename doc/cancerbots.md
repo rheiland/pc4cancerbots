@@ -1,0 +1,6 @@
+## Introduction: a synthetic multicellular system to deliver a therapeutic "cargo"
+
+This app demonstrates how simple "rules" for chemical- and contact-based communication could be used for active delivery of therapeutic compounds, while overcoming traditional biotransport limits and using hypoxia to target delivery. It is based on a published PhysiCell example in Ghaffarizadeh et al. (2018) [1]. In this model, <span style="color:green">cancer cells (green)</span> rapidly divide while consuming oxygen, which drives the emergence of hypoxic gradients. Greater availability of oxygen drives faster proliferation, while low oxygen can trigger necrotic death, creating a necrotic core (brown cells) in the center of the tumor. After initial growth, we "inject" a multicellular synthetic therapy.
+
+In this (for now theoretical) synthetic therapy, "worker cells" (red)&#x1F534; search for "cargo cells" (blue)&#x1F535;, form focal adhesions, and haul their cargo towards hypoxic (oxygen-depleted) regions in the tissue. Once they reach a region of sufficiently low oxygen, they release their cargo and resume their initial search for more cargo. Released cargo cells secrete a chemotherapeutic compound that can kill nearby tumor cells. (Cancer cells are shaded according to their level of therapy-induced damage.)
+
