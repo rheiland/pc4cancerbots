@@ -100,12 +100,12 @@
 		<folder>output</folder> <!-- use . for root --> 
 
 		<full_data>
-			<interval units="min">60</interval>
+			<interval units="min">240</interval>
 			<enable>true</enable>
 		</full_data>
 		
 		<SVG>
-			<interval units="min">60</interval>
+			<interval units="min">240</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -126,7 +126,7 @@
 		<worker_fraction type="double" units="dimensionless" 
 			description="fraction of injected cells that are workers">0.10</worker_fraction>
 		<save_interval_after_therapy_start type="double" units="min" 
-			description="save (output) interval after therapy begins">3</save_interval_after_therapy_start>
+			description="save (output) interval after therapy begins">60</save_interval_after_therapy_start>
 		
 		<!-- cargo cell setup --> 
 		<cargo_o2_relative_uptake type="double" units="dimensionless" 
