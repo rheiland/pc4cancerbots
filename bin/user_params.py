@@ -53,8 +53,8 @@ class UserTab(object):
         param_name4.style.button_color = 'tan'
 
         self.save_interval_after_therapy_start = FloatText(
-          value=3,
-          step=0.1,
+          value=60,
+          step=1,
           style=style, layout=widget_layout)
 
         param_name5 = Button(description='cargo_o2_relative_uptake', disabled=True, layout=name_button_layout)
