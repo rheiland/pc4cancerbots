@@ -140,7 +140,7 @@ class SVGTab(object):
         # with debug_view:
         #     print("plot_svg:", full_fname) 
         if not os.path.isfile(full_fname):
-            print("Missing output file")   
+            print("Once output files are generated, click the slider.")   
             return
 
         xlist = deque()

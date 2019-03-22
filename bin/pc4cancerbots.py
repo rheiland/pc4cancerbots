@@ -1,17 +1,28 @@
 import ipywidgets as widgets
-from hublib.ui import RunCommand, Submit
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import os
 import glob
 import shutil
+import math
 import datetime
 import tempfile
+from about import AboutTab
 from config import ConfigTab
 from user_params import UserTab
 from svg import SVGTab
 from substrates import SubstrateTab
 from pathlib import Path
 from debug import debug_view
+import platform
+
+hublib_flag = True
+if platform.system() != 'Windows':
+    try:
+#        print("Trying to import hublib.ui")
+        from hublib.ui import RunCommand, Submit
+    except:
+        hublib_flag = False
+
 
 # join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
 
@@ -20,23 +31,27 @@ tab_layout = widgets.Layout(width='auto',   # border='2px solid black',
                             height=tab_height, overflow_y='scroll',)
 
 # create the tabs, but don't display yet
+about_tab = AboutTab()
 config_tab = ConfigTab()
 
-full_filename = os.path.abspath('data/PhysiCell_settings.xml')
-tree = ET.parse(full_filename)  # this file cannot be overwritten; part of tool distro
+
+xml_file = os.path.join('data', 'PhysiCell_settings.xml')
+full_xml_filename = os.path.abspath(xml_file)
+
+tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
 xml_root = tree.getroot()
 user_tab = UserTab()
 svg = SVGTab()
 sub = SubstrateTab()
 
-nanoHUB_flag = "home/nanohub" in os.environ['HOME']  # True/False (running on nanoHUB or not)
+nanoHUB_flag = False
+if( 'HOME' in os.environ.keys() ):
+    nanoHUB_flag = "home/nanohub" in os.environ['HOME']
 
 
 def read_config_cb(_b):
     # with debug_view:
     #     print("read_config_cb", read_config.value)
-        # e.g.  "DEFAULT" -> read_config /Users/heiland/dev/pc4cancerbots/data/nanobio_settings.xml
-        #       "t360.xml" -> read_config /Users/heiland/.local/share/pc4cancerbots/t360.xml
 
     if read_config.value is None:  #occurs when a Run just finishes and we update pulldown with the new cache dir??
         # with debug_view:
@@ -70,20 +85,25 @@ def read_config_cb(_b):
         
 # Using the param values in the GUI, write a new .xml config file
 def write_config_file(name):
-    # Read in the default xml config file, just to get a valid 'root' to populate a new one
-    full_filename = os.path.abspath('data/PhysiCell_settings.xml')
     # with debug_view:
     #     print("write_config_file: based on ",full_filename)
-    tree = ET.parse(full_filename)  # this file cannot be overwritten; part of tool distro
+
+    tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
     xml_root = tree.getroot()
     config_tab.fill_xml(xml_root)
     user_tab.fill_xml(xml_root)
     tree.write(name)
 
+   # update substrate mesh layout (beware of https://docs.python.org/3/library/functions.html#round)
+    sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
+    sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
+    # print("------- sub.numx, sub.numy = ", sub.numx, sub.numy)
 
 # callback from write_config_button
 def write_config_file_cb(b):
-    dirname = os.path.expanduser('~/.local/share/pc4cancerbots')
+    path_to_share = os.path.join('~', '.local','share','pc4cancerbots')
+    dirname = os.path.expanduser(path_to_share)
+
     val = write_config_box.value
     if val == '':
         val = write_config_box.placeholder
@@ -93,8 +113,9 @@ def write_config_file_cb(b):
 # Fill the "Load Config" dropdown widget with valid cached results (and 
 # default & previous config options)
 def get_config_files():
-    cf = {'DEFAULT': os.path.abspath('data/PhysiCell_settings.xml')}
-    dirname = os.path.expanduser('~/.local/share/pc4cancerbots')
+    cf = {'DEFAULT': full_xml_filename}
+    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
+    dirname = os.path.expanduser(path_to_share)
     try:
         os.makedirs(dirname)
     except:
@@ -193,7 +214,7 @@ def run_sim_func(s):
     os.makedirs('tmpdir')
 
     # write the default config file to tmpdir
-    new_config_file = "tmpdir/config.xml"
+    new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
     write_config_file(new_config_file)  
 
     with open(new_config_file) as f:
@@ -266,8 +287,8 @@ read_config.observe(read_config_cb, names='value')
 # )
 # write_config_row = widgets.HBox([write_config_button, write_config_box])
 
-titles = ['Config Basics', 'User Params', 'Cell Plots', 'Substrate Plots']
-tabs = widgets.Tab(children=[config_tab.tab, user_tab.tab, svg.tab, sub.tab],
+titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
+tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
                    layout=tab_layout)
 
