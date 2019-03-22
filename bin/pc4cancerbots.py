@@ -294,18 +294,22 @@ tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.ta
 
 homedir = os.getcwd()
 
+tool_title = widgets.Label(r'\(\textbf{pc4cancerbots}\)')
 if nanoHUB_flag:
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, remote_cb, run_button.w])
 
     # Let's not allow for batch runs for this tool.
     # gui = widgets.VBox(children=[read_config, tabs, remote_cb, run_button.w])
-    gui = widgets.VBox(children=[read_config, tabs, run_button.w])
+    top_row = widgets.HBox(children=[read_config, tool_title])
+    gui = widgets.VBox(children=[top_row, tabs, run_button.w])
     #gui = widgets.VBox(children=[tabs, run_button.w])
 else:
     #gui = widgets.VBox(children=[read_config, tabs, write_config_row, run_button.w])
     #gui = widgets.VBox(children=[read_config, tabs, run_button.w])
-    gui = widgets.VBox(children=[tabs, run_button.w])
+    top_row = widgets.HBox(children=[tool_title])
+    gui = widgets.VBox(children=[top_row, tabs, run_button.w])
+
 fill_gui_params(read_config.options['DEFAULT'])
 
 # pass in (relative) directory where output data is located
