@@ -26,8 +26,8 @@ if platform.system() != 'Windows':
 
 # join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
 
-# tab_height = 'auto'
-tab_height = '600'
+tab_height = 'auto'
+#tab_height = '600'
 tab_layout = widgets.Layout(width='auto',   # border='2px solid black',
                             height=tab_height, overflow_y='scroll',)
 
