@@ -148,10 +148,13 @@ reset:
 	rm ALL_CITATIONS.txt 
 	cp ./config/PhysiCell_settings_default.xml ./config/PhysiCell_settings.xml 
 	touch ./config/empty.txt
-	
+
+distclean: clean
+        rm -f ../bin/$(PROGRAM_NAME)
 clean:
 	rm -f *.o
-	rm -f $(PROGRAM_NAME)*
+#	rm -f $(PROGRAM_NAME)*
+	rm -f $(PROGRAM_NAME)
 	
 data-cleanup:
 	rm -f *.mat
