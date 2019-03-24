@@ -26,15 +26,10 @@ if platform.system() != 'Windows':
 
 # join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
 
-tab_height = 'auto'
-#tab_height = '600'
-tab_layout = widgets.Layout(width='auto',   # border='2px solid black',
-                            height=tab_height, overflow_y='scroll',)
 
 # create the tabs, but don't display yet
 about_tab = AboutTab()
 config_tab = ConfigTab()
-
 
 xml_file = os.path.join('data', 'PhysiCell_settings.xml')
 full_xml_filename = os.path.abspath(xml_file)
@@ -84,21 +79,22 @@ def read_config_cb(_b):
         svg.update('')
         sub.update('')
         
+
 # Using the param values in the GUI, write a new .xml config file
 def write_config_file(name):
     # with debug_view:
     #     print("write_config_file: based on ",full_filename)
-
     tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
     xml_root = tree.getroot()
     config_tab.fill_xml(xml_root)
     user_tab.fill_xml(xml_root)
     tree.write(name)
 
-   # update substrate mesh layout (beware of https://docs.python.org/3/library/functions.html#round)
+    # update substrate mesh layout (beware of https://docs.python.org/3/library/functions.html#round)
     sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
     sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
     # print("------- sub.numx, sub.numy = ", sub.numx, sub.numy)
+
 
 # callback from write_config_button
 def write_config_file_cb(b):
@@ -111,11 +107,12 @@ def write_config_file_cb(b):
     name = os.path.join(dirname, val)
     write_config_file(name)
 
+
 # Fill the "Load Config" dropdown widget with valid cached results (and 
 # default & previous config options)
 def get_config_files():
     cf = {'DEFAULT': full_xml_filename}
-    path_to_share = os.path.join('~', '.local','share','pc4cancerimmune')
+    path_to_share = os.path.join('~', '.local','share','pc4cancerbots')
     dirname = os.path.expanduser(path_to_share)
     try:
         os.makedirs(dirname)
@@ -127,7 +124,7 @@ def get_config_files():
 
     # Find the dir path (full_path) to the cached dirs
     if nanoHUB_flag:
-        full_path = os.path.expanduser("~/data/results/.submit_cache/pc4cancerbots")
+        full_path = os.path.expanduser("~/data/results/.submit_cache/pc4cancerbots")  # does Windows like this?
     else:
         # local cache
         try:
@@ -150,6 +147,7 @@ def get_config_files():
     sorted_dirs = sorted(dirs, key=os.path.getctime, reverse=True)
     # with debug_view:
     #     print(sorted_dirs)
+
     # Get a list of timestamps associated with each dir
     sorted_dirs_dates = [str(datetime.datetime.fromtimestamp(os.path.getctime(x))) for x in sorted_dirs]
     # Create a dict of {timestamp:dir} pairs
@@ -158,6 +156,7 @@ def get_config_files():
     # with debug_view:
     #     print(cf)
     return cf
+
 
 # Using params in a config (.xml) file, fill GUI widget values in each of the "input" tabs
 def fill_gui_params(config_file):
@@ -197,7 +196,7 @@ def run_done_func(s, rdir):
     #     print('RDF DONE')
 
 
-# This is used now for the RunCommand
+# This is used now for the ("smart") RunCommand
 def run_sim_func(s):
     # with debug_view:
     #     print('run_sim_func')
@@ -228,9 +227,7 @@ def run_sim_func(s):
 
     if nanoHUB_flag:
         if remote_cb.value:
-            # s.run(run_name, "-n 8 -w 1440 pc4nanobio-r77 config.xml")  # will wait in standby queue forever
-            # s.run(run_name, "-w 7200 pc4nanobio-r77 config.xml") 
-            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerbots-r7 config.xml") 
+            s.run(run_name, "-v ncn-hub_M@brown -n 8 -w 1440 pc4cancerbots-r7 config.xml")   # "-r7" suffix??
         else:
             # read_config.index = 0   # reset Dropdown 'Load Config' to 'DEFAULT' when Run interactively
             s.run(run_name, "--local ../bin/myproj config.xml")
@@ -254,6 +251,19 @@ def outcb(s):
     return s
 
 
+# Callback for the ("dumb") 'Run' button (without hublib.ui)
+def run_button_cb(s):
+#    with debug_view:
+#        print('run_button_cb')
+
+#    new_config_file = "config.xml"
+    new_config_file = full_xml_filename
+    write_config_file(new_config_file)
+#    subprocess.call(["biorobots", xml_file_out])
+#    subprocess.call(["myproj", new_config_file])   # spews to shell, but not ctl-C'able
+#    subprocess.call(["myproj", new_config_file], shell=True)  # no
+    subprocess.Popen(["myproj", new_config_file])
+
 if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
@@ -262,11 +272,20 @@ if nanoHUB_flag:
                         showcache=False,
                         outcb=outcb)
 else:
-    run_button = RunCommand(start_func=run_sim_func,
+    if (hublib_flag):
+        run_button = RunCommand(start_func=run_sim_func,
                             done_func=run_done_func,
                             cachename='pc4cancerbots',
                             showcache=False,
                             outcb=outcb)  
+    else:
+        run_button = widgets.Button(
+            description='Run',
+            button_style='success',  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip='Run a simulation',
+        )
+        run_button.on_click(run_button_cb)
+
 
 read_config = widgets.Dropdown(
     description='Load Config',
@@ -276,18 +295,8 @@ read_config = widgets.Dropdown(
 read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
 read_config.observe(read_config_cb, names='value') 
 
-# write_config_button = widgets.Button(
-#     description='Write config file',
-#     button_style='success',  # 'success', 'info', 'warning', 'danger' or ''
-#     tooltip='Generate XML',
-# )
-# write_config_button.on_click(write_config_file_cb)
-# write_config_box = widgets.Text(
-#     placeholder='my_nanobio_settings.xml',
-#     description='',
-# )
-# write_config_row = widgets.HBox([write_config_button, write_config_box])
-
+tab_height = 'auto'
+tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
 titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
 tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
@@ -297,27 +306,19 @@ homedir = os.getcwd()
 
 tool_title = widgets.Label(r'\(\textbf{pc4cancerbots}\)')
 if nanoHUB_flag:
+    # define this, but don't use (yet)
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
-    #gui = widgets.VBox(children=[read_config, tabs, write_config_row, remote_cb, run_button.w])
 
-    # Let's not allow for batch runs for this tool.
-    # gui = widgets.VBox(children=[read_config, tabs, remote_cb, run_button.w])
     top_row = widgets.HBox(children=[read_config, tool_title])
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
-    #gui = widgets.VBox(children=[tabs, run_button.w])
 else:
-    #gui = widgets.VBox(children=[read_config, tabs, write_config_row, run_button.w])
-    #gui = widgets.VBox(children=[read_config, tabs, run_button.w])
     top_row = widgets.HBox(children=[tool_title])
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
 
 fill_gui_params(read_config.options['DEFAULT'])
 
 # pass in (relative) directory where output data is located
-#svg.update(read_config.value)
-#output_dir = "output"
 output_dir = "tmpdir"
 svg.update(output_dir)
-#sub.update_dropdown_fields(output_dir)
 sub.update_dropdown_fields("data")
 sub.update(output_dir)
