@@ -149,6 +149,9 @@ reset:
 	cp ./config/PhysiCell_settings_default.xml ./config/PhysiCell_settings.xml 
 	touch ./config/empty.txt
 
+install: all
+	cp $(PROGRAM_NAME) ../bin
+
 distclean: clean
 	rm -f ../bin/$(PROGRAM_NAME)
 
