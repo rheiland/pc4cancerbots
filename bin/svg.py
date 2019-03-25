@@ -27,7 +27,7 @@ class SVGTab(object):
 #        self.fig = plt.figure(figsize=(6, 6))
         # self.fig = plt.figure(figsize=(7, 7))
 
-        max_frames = 5
+        max_frames = 1
         self.svg_plot = interactive(self.plot_svg, frame=(0, max_frames), continuous_update=False)
         plot_size = '500px'
         plot_size = '700px'
