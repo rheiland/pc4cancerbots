@@ -296,8 +296,7 @@ read_config.style = {'description_width': '%sch' % str(len(read_config.descripti
 read_config.observe(read_config_cb, names='value') 
 
 tab_height = 'auto'
-#tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
-tab_layout = widgets.Layout(width='auto',height='auto')   # border='2px solid black',
+tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
 titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
 tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
