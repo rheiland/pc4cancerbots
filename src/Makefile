@@ -150,7 +150,8 @@ reset:
 	touch ./config/empty.txt
 
 distclean: clean
-        rm -f ../bin/$(PROGRAM_NAME)
+	rm -f ../bin/$(PROGRAM_NAME)
+
 clean:
 	rm -f *.o
 #	rm -f $(PROGRAM_NAME)*
