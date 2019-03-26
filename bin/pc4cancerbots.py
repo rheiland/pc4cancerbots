@@ -295,8 +295,8 @@ read_config = widgets.Dropdown(
 read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
 read_config.observe(read_config_cb, names='value') 
 
-#tab_height = 'auto'
-tab_height = '900px'
+tab_height = 'auto'
+#tab_height = '900px'
 tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
 titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
 tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
