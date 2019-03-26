@@ -391,8 +391,8 @@ class UserTab(object):
           box22,
           box23,
           box24,
-        ])
-#        ], layout = {'width': 'auto', 'height': '500px', 'overflow_y':'scroll',})
+#        ])
+        ], layout = {'width': 'auto', 'height': 'auto', 'overflow_y':'scroll',})
 
     # Populate the GUI widgets with values from the XML
     def fill_gui(self, xml_root):

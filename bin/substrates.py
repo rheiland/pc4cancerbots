@@ -31,11 +31,12 @@ class SubstrateTab(object):
         self.numx = 0
         self.numy = 0
 
-        tab_height = '500px'
         constWidth = '180px'
         constWidth2 = '150px'
-        tab_layout = Layout(width='900px',   # border='2px solid black',
-                            height=tab_height, ) #overflow_y='scroll')
+
+        # tab_height = '500px'
+        # tab_layout = Layout(width='900px',   # border='2px solid black',
+        #                     height=tab_height, ) #overflow_y='scroll')
 
         max_frames = 1   
         self.mcds_plot = interactive(self.plot_substrate, frame=(0, max_frames), continuous_update=False)  
