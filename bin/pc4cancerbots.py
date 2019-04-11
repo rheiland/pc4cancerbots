@@ -22,6 +22,8 @@ if platform.system() != 'Windows':
         from hublib.ui import RunCommand, Submit
     except:
         hublib_flag = False
+else:
+    hublib_flag = False
 
 
 # join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
@@ -256,6 +258,38 @@ def run_button_cb(s):
 #    with debug_view:
 #        print('run_button_cb')
 
+#    new_config_file = full_xml_filename
+    # print("new_config_file = ", new_config_file)
+#    write_config_file(new_config_file)
+
+    # make sure we are where we started
+    os.chdir(homedir)
+
+    # remove any previous data
+    # NOTE: this dir name needs to match the <folder>  in /data/<config_file.xml>
+    os.system('rm -rf tmpdir*')
+    if os.path.isdir('tmpdir'):
+        # something on NFS causing issues...
+        tname = tempfile.mkdtemp(suffix='.bak', prefix='tmpdir_', dir='.')
+        shutil.move('tmpdir', tname)
+    os.makedirs('tmpdir')
+
+    # write the default config file to tmpdir
+    new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
+    write_config_file(new_config_file)  
+
+    tdir = os.path.abspath('tmpdir')
+    os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
+    svg.update(tdir)
+    sub.update(tdir)
+
+    subprocess.Popen(["../bin/myproj", "config.xml"])
+
+# Callback for the ("dumb") 'Run' button (without hublib.ui)
+def run_button_cb_OLD(s):
+#    with debug_view:
+#        print('run_button_cb')
+
 #    new_config_file = "config.xml"
     new_config_file = full_xml_filename
     write_config_file(new_config_file)
@@ -264,6 +298,7 @@ def run_button_cb(s):
 #    subprocess.call(["myproj", new_config_file], shell=True)  # no
     subprocess.Popen(["myproj", new_config_file])
 
+#----------------------------------------------
 if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
@@ -307,6 +342,8 @@ tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.ta
 homedir = os.getcwd()
 
 tool_title = widgets.Label(r'\(\textbf{pc4cancerbots}\)')
+gui_height = '900px'
+gui_layout = widgets.Layout(width='auto',height=gui_height, overflow_y='scroll',)   # border='2px solid black',
 if nanoHUB_flag:
     # define this, but don't use (yet)
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
@@ -315,7 +352,7 @@ if nanoHUB_flag:
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
 else:
     top_row = widgets.HBox(children=[tool_title])
-    gui = widgets.VBox(children=[top_row, tabs, run_button.w])
+    gui = widgets.VBox(children=[top_row, tabs, run_button.w], layout=gui_layout)
 
 fill_gui_params(read_config.options['DEFAULT'])
 
