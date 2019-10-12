@@ -1,3 +1,8 @@
+#
+# pc4cancerbots.py - top-level script that defines the overall GUi: tabs, etc. 
+#
+# Author: Randy Heiland
+#
 import ipywidgets as widgets
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import os
@@ -8,12 +13,14 @@ import datetime
 import tempfile
 from about import AboutTab
 from config import ConfigTab
+from microenv_params import MicroenvTab
 from user_params import UserTab
 from svg import SVGTab
 from substrates import SubstrateTab
 from pathlib import Path
-from debug import debug_view
 import platform
+import subprocess
+from debug import debug_view
 
 hublib_flag = True
 if platform.system() != 'Windows':
@@ -38,6 +45,7 @@ full_xml_filename = os.path.abspath(xml_file)
 
 tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
 xml_root = tree.getroot()
+microenv_tab = MicroenvTab()
 user_tab = UserTab()
 svg = SVGTab()
 sub = SubstrateTab()
@@ -89,6 +97,7 @@ def write_config_file(name):
     tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
     xml_root = tree.getroot()
     config_tab.fill_xml(xml_root)
+    microenv_tab.fill_xml(xml_root)
     user_tab.fill_xml(xml_root)
     tree.write(name)
 
@@ -133,7 +142,7 @@ def get_config_files():
             cachedir = os.environ['CACHEDIR']
             full_path = os.path.join(cachedir, "pc4cancerbots")
         except:
-            print("Exception in get_config_files")
+            # print("Exception in get_config_files")
             return cf
 
     # Put all those cached (full) dirs into a list
@@ -167,6 +176,7 @@ def fill_gui_params(config_file):
     tree = ET.parse(config_file)
     xml_root = tree.getroot()
     config_tab.fill_gui(xml_root)
+    microenv_tab.fill_gui(xml_root)
     user_tab.fill_gui(xml_root)
 
 
@@ -285,20 +295,8 @@ def run_button_cb(s):
 
     subprocess.Popen(["../bin/myproj", "config.xml"])
 
-# Callback for the ("dumb") 'Run' button (without hublib.ui)
-def run_button_cb_OLD(s):
-#    with debug_view:
-#        print('run_button_cb')
 
-#    new_config_file = "config.xml"
-    new_config_file = full_xml_filename
-    write_config_file(new_config_file)
-#    subprocess.call(["biorobots", xml_file_out])
-#    subprocess.call(["myproj", new_config_file])   # spews to shell, but not ctl-C'able
-#    subprocess.call(["myproj", new_config_file], shell=True)  # no
-    subprocess.Popen(["myproj", new_config_file])
-
-#----------------------------------------------
+#-------------------------------------------------
 if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
@@ -322,39 +320,37 @@ else:
         run_button.on_click(run_button_cb)
 
 
-read_config = widgets.Dropdown(
-    description='Load Config',
-    options=get_config_files(),
-    tooltip='Config File or Previous Run',
-)
-read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
-read_config.observe(read_config_cb, names='value') 
+if nanoHUB_flag or hublib_flag:
+    read_config = widgets.Dropdown(
+        description='Load Config',
+        options=get_config_files(),
+        tooltip='Config File or Previous Run',
+    )
+    read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
+    read_config.observe(read_config_cb, names='value') 
 
 tab_height = 'auto'
-#tab_height = '900px'
 tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
-#tab_layout = widgets.Layout(width='auto',height=tab_height,)   # border='2px solid black',
-titles = ['About', 'Config Basics', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
-tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, user_tab.tab, svg.tab, sub.tab],
+titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
+tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, svg.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
                    layout=tab_layout)
 
 homedir = os.getcwd()
 
-tool_title = widgets.Label(r'\(\textbf{pc4cancerbots}\)')
-gui_height = '900px'
-gui_layout = widgets.Layout(width='auto',height=gui_height, overflow_y='scroll',)   # border='2px solid black',
-if nanoHUB_flag:
+tool_title = widgets.Label(r'\(\textbf{cancerbots}\)')
+if nanoHUB_flag or hublib_flag:
     # define this, but don't use (yet)
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
 
     top_row = widgets.HBox(children=[read_config, tool_title])
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
+    fill_gui_params(read_config.options['DEFAULT'])
 else:
     top_row = widgets.HBox(children=[tool_title])
-    gui = widgets.VBox(children=[top_row, tabs, run_button.w], layout=gui_layout)
+    gui = widgets.VBox(children=[top_row, tabs, run_button])
+    fill_gui_params("data/PhysiCell_settings.xml")
 
-fill_gui_params(read_config.options['DEFAULT'])
 
 # pass in (relative) directory where output data is located
 output_dir = "tmpdir"

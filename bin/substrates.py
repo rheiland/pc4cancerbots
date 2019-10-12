@@ -9,9 +9,19 @@ import matplotlib.colors as mplc
 import scipy.io
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import glob
+import platform
 import zipfile
-from hublib.ui import Download
 from debug import debug_view 
+
+hublib_flag = True
+if platform.system() != 'Windows':
+    try:
+#        print("Trying to import hublib.ui")
+        from hublib.ui import Download
+    except:
+        hublib_flag = False
+else:
+    hublib_flag = False
 
 
 class SubstrateTab(object):
@@ -31,18 +41,20 @@ class SubstrateTab(object):
         self.numx = 0
         self.numy = 0
 
+        tab_height = '500px'
         constWidth = '180px'
         constWidth2 = '150px'
-
-        # tab_height = '500px'
-        # tab_layout = Layout(width='900px',   # border='2px solid black',
-        #                     height=tab_height, ) #overflow_y='scroll')
+        tab_layout = Layout(width='900px',   # border='2px solid black',
+                            height=tab_height, ) #overflow_y='scroll')
 
         max_frames = 1   
         self.mcds_plot = interactive(self.plot_substrate, frame=(0, max_frames), continuous_update=False)  
         svg_plot_size = '700px'
+        # svg_plot_size = '680px'
         self.mcds_plot.layout.width = svg_plot_size
         self.mcds_plot.layout.height = svg_plot_size
+
+        self.fontsize = 20
 
         self.max_frames = BoundedIntText(
             min=0, max=99999, value=max_frames,
@@ -174,12 +186,16 @@ class SubstrateTab(object):
                             align_items='stretch',
                             flex_direction='row',
                             display='flex'))
-        self.download_button = Download('mcds.zip', style='warning', icon='cloud-download', 
-                                            tooltip='Download data', cb=self.download_cb)
-        download_row = HBox([self.download_button.w, Label("Download all substrate data (browser must allow pop-ups).")])
+        if (hublib_flag):
+            self.download_button = Download('mcds.zip', style='warning', icon='cloud-download', 
+                                                tooltip='Download data', cb=self.download_cb)
+            download_row = HBox([self.download_button.w, Label("Download all substrate data (browser must allow pop-ups).")])
 
-#        self.tab = VBox([row1, row2, self.mcds_plot])
-        self.tab = VBox([row1, row2, self.mcds_plot, download_row])
+    #        self.tab = VBox([row1, row2, self.mcds_plot])
+            self.tab = VBox([row1, row2, self.mcds_plot, download_row])
+        else:
+            # self.tab = VBox([row1, row2])
+            self.tab = VBox([row1, row2, self.mcds_plot])
 
     #---------------------------------------------------
     def update_dropdown_fields(self, data_dir):
@@ -306,16 +322,17 @@ class SubstrateTab(object):
         xml_fname = "output%08d.xml" % frame
         # fullname = output_dir_str + fname
 
+#        fullname = fname
         full_fname = os.path.join(self.output_dir, fname)
         full_xml_fname = os.path.join(self.output_dir, xml_fname)
 #        self.output_dir = '.'
 
+#        if not os.path.isfile(fullname):
         if not os.path.isfile(full_fname):
-#            print("Missing output file")  # No:  output00000000_microenvironment0.mat
-            print("Once output files are generated, click the slider.")   
-
+            print("Once output files are generated, click the slider.")  # No:  output00000000_microenvironment0.mat
             return
 
+#        tree = ET.parse(xml_fname)
         tree = ET.parse(full_xml_fname)
         xml_root = tree.getroot()
         mins= round(int(float(xml_root.find(".//current_time").text)))  # TODO: check units = mins
@@ -325,6 +342,7 @@ class SubstrateTab(object):
 
 
         info_dict = {}
+#        scipy.io.loadmat(fullname, info_dict)
         scipy.io.loadmat(full_fname, info_dict)
         M = info_dict['multiscale_microenvironment']
         #     global_field_index = int(mcds_field.value)
@@ -333,7 +351,10 @@ class SubstrateTab(object):
         # plt.clf()
         # my_plot = plt.imshow(f.reshape(400,400), cmap='jet', extent=[0,20, 0,20])
     
-        self.fig = plt.figure(figsize=(7.2,6))  # this strange figsize results in a ~square contour plot
+        # self.fig = plt.figure(figsize=(7.2,6))  # this strange figsize results in a ~square contour plot
+        # self.fig = plt.figure(figsize=(24,20))  # this strange figsize results in a ~square contour plot
+        self.fig = plt.figure(figsize=(28.8,24))  # this strange figsize results in a ~square contour plot
+        # self.fig = plt.figure(figsize=(28,24))  # this strange figsize results in a ~square contour plot
         #     fig.set_tight_layout(True)
         #     ax = plt.axes([0, 0.05, 0.9, 0.9 ]) #left, bottom, width, height
         #     ax = plt.axes([0, 0.0, 1, 1 ])
@@ -375,8 +396,17 @@ class SubstrateTab(object):
                 # print('got error on contourf 2.')
 
         if (contour_ok):
-            plt.title(title_str)
-            plt.colorbar(my_plot)
+            plt.title(title_str, fontsize=self.fontsize)
+            plt.tick_params(labelsize=self.fontsize)
+            # plt.colorbar(my_plot)
+            cbar = plt.colorbar(my_plot)
+            cbar.ax.tick_params(labelsize=self.fontsize)
+
+        #     main_ax.set_title(title_str, fontsize=self.fontsize)
+        #     main_ax.tick_params(labelsize=self.fontsize)
+        #    # cbar = plt.colorbar(my_plot)
+        #     cbar = self.fig.colorbar(substrate_plot, ax=main_ax)
+        #     cbar.ax.tick_params(labelsize=self.fontsize)
         axes_min = 0
         axes_max = 2000
         # plt.xlim(axes_min, axes_max)
