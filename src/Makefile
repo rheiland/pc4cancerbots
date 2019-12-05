@@ -30,9 +30,8 @@ ARCH := native # best auto-tuning
 # ARCH := nocona #64-bit pentium 4 or later 
 
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
-#CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
-# drop "-march" to avoid the strange/occasional SIGILL error (seen via valgrind)
-CFLAGS :=  -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+# remove the -march arg to avoid SIGILL error on nanoHUB
+CFLAGS := -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
 
@@ -150,7 +149,7 @@ reset:
 	cp ./config/PhysiCell_settings-backup.xml ./config/PhysiCell_settings.xml 
 	
 # next 2 targets for nanoHUB
-install: all
+install: 
 	. /etc/environ.sh; use -e -r anaconda3-5.1; make all
 	cp $(PROGRAM_NAME) ../bin
 

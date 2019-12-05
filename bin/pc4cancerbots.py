@@ -1,8 +1,3 @@
-#
-# pc4cancerbots.py - top-level script that defines the overall GUi: tabs, etc. 
-#
-# Author: Randy Heiland
-#
 import ipywidgets as widgets
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import os
@@ -15,7 +10,7 @@ from about import AboutTab
 from config import ConfigTab
 from microenv_params import MicroenvTab
 from user_params import UserTab
-from svg import SVGTab
+# from svg import SVGTab
 from substrates import SubstrateTab
 from pathlib import Path
 import platform
@@ -27,6 +22,7 @@ if platform.system() != 'Windows':
     try:
 #        print("Trying to import hublib.ui")
         from hublib.ui import RunCommand, Submit
+        # from hublib2.ui import RunCommand, Submit
     except:
         hublib_flag = False
 else:
@@ -47,7 +43,7 @@ tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of t
 xml_root = tree.getroot()
 microenv_tab = MicroenvTab()
 user_tab = UserTab()
-svg = SVGTab()
+# svg = SVGTab()
 sub = SubstrateTab()
 
 nanoHUB_flag = False
@@ -55,25 +51,33 @@ if( 'HOME' in os.environ.keys() ):
     nanoHUB_flag = "home/nanohub" in os.environ['HOME']
 
 
+# callback when user selects a cached run in the 'Load Config' dropdown widget.
+# HOWEVER, beware if/when this is called after a sim finishes and the Load Config dropdown widget reverts to 'DEFAULT'.
+# In that case, we don't want to recompute substrate.py self.numx, self.numy because we're still displaying plots from previous sim.
 def read_config_cb(_b):
     # with debug_view:
     #     print("read_config_cb", read_config.value)
 
+    sub.first_time = True
+
     if read_config.value is None:  #occurs when a Run just finishes and we update pulldown with the new cache dir??
         # with debug_view:
         #     print("NOTE: read_config_cb(): No read_config.value. Returning!")
+        # print("NOTE: read_config_cb(): No read_config.value. Returning!")
         return
 
     if os.path.isdir(read_config.value):
         is_dir = True
         config_file = os.path.join(read_config.value, 'config.xml')
+        # print("read_config_cb(): is_dir=True; config_file=",config_file)
     else:
         is_dir = False
         config_file = read_config.value
+        # print("read_config_cb(): is_dir=False; --- config_file=",config_file)
 
     if Path(config_file).is_file():
         # with debug_view:
-        #     print("read_config_cb:  calling fill_gui_params with ",config_file)
+        # print("read_config_cb():  calling fill_gui_params with ",config_file)
         fill_gui_params(config_file)  #should verify file exists!
     else:
         # with debug_view:
@@ -82,12 +86,19 @@ def read_config_cb(_b):
     
     # update visualization tabs
     if is_dir:
-        svg.update(read_config.value)
+        # svg.update(read_config.value)
+        # print("read_config_cb():  is_dir True, calling update_params")
+        sub.update_params(config_tab)
         sub.update(read_config.value)
-    else:  # may want to distinguish "DEFAULT" from other saved .xml config files
+    # else:  # may want to distinguish "DEFAULT" from other saved .xml config files
         # FIXME: really need a call to clear the visualizations
-        svg.update('')
-        sub.update('')
+        # svg.update('')
+        # sub.update('')
+        # print("read_config_cb():  is_dir False, calling update_params")
+        # sub.update_params(config_tab)
+        # print("read_config_cb():  is_dir False, calling sub.update()")
+        # sub.update()  # NOTE: even if we attempt this, it doesn't really refresh the plots
+        # pass
         
 
 # Using the param values in the GUI, write a new .xml config file
@@ -102,21 +113,22 @@ def write_config_file(name):
     tree.write(name)
 
     # update substrate mesh layout (beware of https://docs.python.org/3/library/functions.html#round)
-    sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
-    sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
-    # print("------- sub.numx, sub.numy = ", sub.numx, sub.numy)
+    sub.update_params(config_tab)
+    # sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
+    # sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
+    # print("pc4cancerbots.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
 
 
 # callback from write_config_button
-def write_config_file_cb(b):
-    path_to_share = os.path.join('~', '.local','share','pc4cancerbots')
-    dirname = os.path.expanduser(path_to_share)
+# def write_config_file_cb(b):
+#     path_to_share = os.path.join('~', '.local','share','pc4cancerbots')
+#     dirname = os.path.expanduser(path_to_share)
 
-    val = write_config_box.value
-    if val == '':
-        val = write_config_box.placeholder
-    name = os.path.join(dirname, val)
-    write_config_file(name)
+#     val = write_config_box.value
+#     if val == '':
+#         val = write_config_box.placeholder
+#     name = os.path.join(dirname, val)
+#     write_config_file(name)
 
 
 # Fill the "Load Config" dropdown widget with valid cached results (and 
@@ -173,6 +185,7 @@ def get_config_files():
 def fill_gui_params(config_file):
     # with debug_view:
     #     print("fill_gui_params: filling with ",config_file)
+    # print("fill_gui_params: filling with ",config_file)
     tree = ET.parse(config_file)
     xml_root = tree.getroot()
     config_tab.fill_gui(xml_root)
@@ -201,9 +214,13 @@ def run_done_func(s, rdir):
     # with debug_view:
     #     print('run_done_func: ---- after updating read_config.options')
 
+    # sub.update_dropdown_fields("data")   # WARNING: fill in the substrate field(s)
+
     # and update visualizations
-    svg.update(rdir)
+    # svg.update(rdir)
     sub.update(rdir)
+
+
     # with debug_view:
     #     print('RDF DONE')
 
@@ -234,7 +251,8 @@ def run_sim_func(s):
 
     tdir = os.path.abspath('tmpdir')
     os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
-    svg.update(tdir)
+    # svg.update(tdir)
+    # sub.update_params(config_tab)
     sub.update(tdir)
 
     if nanoHUB_flag:
@@ -258,8 +276,10 @@ def outcb(s):
     # Only update file list for certain messages: 
     if "simulat" in s:
         # New Data. update visualizations
-        svg.update('')
-        sub.update('')
+        # svg.update('')
+        # sub.update('')
+        # sub.update_params(config_tab)
+        sub.update()
     return s
 
 
@@ -290,7 +310,8 @@ def run_button_cb(s):
 
     tdir = os.path.abspath('tmpdir')
     os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
-    svg.update(tdir)
+    # svg.update(tdir)
+    # sub.update_params(config_tab)
     sub.update(tdir)
 
     subprocess.Popen(["../bin/myproj", "config.xml"])
@@ -331,8 +352,10 @@ if nanoHUB_flag or hublib_flag:
 
 tab_height = 'auto'
 tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
-titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
-tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, svg.tab, sub.tab],
+#titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
+titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Plots']
+#tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, svg.tab, sub.tab],
+tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
                    layout=tab_layout)
 
@@ -354,6 +377,10 @@ else:
 
 # pass in (relative) directory where output data is located
 output_dir = "tmpdir"
-svg.update(output_dir)
-sub.update_dropdown_fields("data")
-sub.update(output_dir)
+# svg.update(output_dir)
+
+sub.update_dropdown_fields("data")   # WARNING: generates multiple "<Figure size...>" stdout!
+
+# print('config_tab.svg_interval.value= ',config_tab.svg_interval.value )
+# print('config_tab.mcds_interval.value= ',config_tab.mcds_interval.value )
+#sub.update_params(config_tab)
