@@ -69,8 +69,8 @@ class SubstrateTab(object):
         # self.x_range = 2000.
         # self.y_range = 2000.
 
-        self.show_nucleus = 0
-        self.show_edge = False
+        self.show_nucleus = True
+        self.show_edge = True
 
         # initial value
         self.field_index = 4
@@ -216,10 +216,27 @@ class SubstrateTab(object):
         field_cmap_row3 = Box(children=items_auto, layout=box_layout)
 
         #---------------------
+        self.cell_nucleus_toggle = Checkbox(
+            description='nuclei',
+            disabled=False,
+            value = self.show_nucleus,
+#           layout=Layout(width=constWidth2),
+        )
+        def cell_nucleus_toggle_cb(b):
+            # self.update()
+            if (self.cell_nucleus_toggle.value):  
+                self.show_nucleus = True
+            else:
+                self.show_nucleus = False
+            self.i_plot.update()
+
+        self.cell_nucleus_toggle.observe(cell_nucleus_toggle_cb)
+
+        #----
         self.cell_edges_toggle = Checkbox(
             description='edges',
             disabled=False,
-            value=False,
+            value = self.show_edge,
 #           layout=Layout(width=constWidth2),
         )
         def cell_edges_toggle_cb(b):
@@ -232,6 +249,7 @@ class SubstrateTab(object):
 
         self.cell_edges_toggle.observe(cell_edges_toggle_cb)
 
+        #----
         self.cells_toggle = Checkbox(
             description='Cells',
             disabled=False,
@@ -243,8 +261,10 @@ class SubstrateTab(object):
             self.i_plot.update()
             if (self.cells_toggle.value):
                 self.cell_edges_toggle.disabled = False
+                self.cell_nucleus_toggle.disabled = False
             else:
                 self.cell_edges_toggle.disabled = True
+                self.cell_nucleus_toggle.disabled = True
 
         self.cells_toggle.observe(cells_toggle_cb)
 
@@ -299,7 +319,7 @@ class SubstrateTab(object):
                             align_items='stretch',
                             flex_direction='row',
                             display='flex')) 
-        row1b = Box( [self.cells_toggle, self.cell_edges_toggle], layout=Layout(border='1px solid black',
+        row1b = Box( [self.cells_toggle, self.cell_nucleus_toggle, self.cell_edges_toggle], layout=Layout(border='1px solid black',
                             width='50%',
                             height='',
                             align_items='stretch',
@@ -417,6 +437,11 @@ class SubstrateTab(object):
             self.figsize_height_substrate = 12.5
             self.figsize_width_svg = 12.0 * ratio
             self.figsize_height_svg = 12.0 
+
+        self.svg_delta_t = config_tab.svg_interval.value
+        self.substrate_delta_t = config_tab.mcds_interval.value
+        self.modulo = int(self.substrate_delta_t / self.svg_delta_t)
+        # print("substrates: update_params(): modulo=",self.modulo)        
 
 #------------------------------------------------------------------------------
 #    def update(self, rdir):
@@ -686,7 +711,7 @@ class SubstrateTab(object):
                 rgb_list.append(rgb)
 
                 # For .svg files with cells that *have* a nucleus, there will be a 2nd
-                if (self.show_nucleus == 0):
+                if (not self.show_nucleus):
                 #if (not self.show_nucleus):
                     break
 
