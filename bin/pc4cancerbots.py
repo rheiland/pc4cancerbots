@@ -79,6 +79,20 @@ def read_config_cb(_b):
         # with debug_view:
         # print("read_config_cb():  calling fill_gui_params with ",config_file)
         fill_gui_params(config_file)  #should verify file exists!
+
+            # If cells or substrates toggled off in Config tab, toggle off in Plots tab
+        if config_tab.toggle_svg.value == False:
+            sub.cells_toggle.value = False
+            sub.cells_toggle.disabled = True
+        else:
+            sub.cells_toggle.disabled = False
+
+        if config_tab.toggle_mcds.value == False:
+            sub.substrates_toggle.value = False
+            sub.substrates_toggle.disabled = True
+        else:
+            sub.substrates_toggle.disabled = False
+
     else:
         # with debug_view:
         #     print("read_config_cb: ",config_file, " does not exist.")

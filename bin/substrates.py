@@ -58,7 +58,10 @@ class SubstrateTab(object):
         self.svg_frame = 1
         self.substrate_frame = 1
 
-        self.therapy_activation_time = 1000
+        self.customized_output_freq = True
+        self.therapy_activation_time = 1000000
+        self.max_svg_frame_pre_therapy = 1000000
+        self.max_substrate_frame_pre_therapy = 1000000
 
         self.svg_xmin = 0
 
@@ -449,8 +452,11 @@ class SubstrateTab(object):
         self.modulo = int(self.substrate_delta_t / self.svg_delta_t)
         # print("substrates: update_params(): modulo=",self.modulo)        
 
-        self.therapy_activation_time = user_params_tab.therapy_activation_time.value
-        # print("substrates: update_params(): therapy_activation_time=",self.therapy_activation_time)
+        if self.customized_output_freq:
+            self.therapy_activation_time = user_params_tab.therapy_activation_time.value   # NOTE: edit for user param name
+            # print("substrates: update_params(): therapy_activation_time=",self.therapy_activation_time)
+            self.max_svg_frame_pre_therapy = int(self.therapy_activation_time/self.svg_delta_t)
+            self.max_substrate_frame_pre_therapy = int(self.therapy_activation_time/self.substrate_delta_t)
 
 #------------------------------------------------------------------------------
 #    def update(self, rdir):
@@ -832,8 +838,6 @@ class SubstrateTab(object):
         # self.modulo = int(self.substrate_delta_t / self.svg_delta_t)
         # self.therapy_activation_time = user_params_tab.therapy_activation_time.value
 
-        max_svg_frame_pre_therapy = int(self.therapy_activation_time/self.svg_delta_t)
-        max_substrate_frame_pre_therapy = int(self.therapy_activation_time/self.substrate_delta_t)
         # print("plot_substrate(): pre_therapy: max svg, substrate frames = ",max_svg_frame_pre_therapy, max_substrate_frame_pre_therapy)
 
         # Assume: # .svg files >= # substrate files
@@ -849,8 +853,10 @@ class SubstrateTab(object):
             # rwh - funky way to figure out substrate frame for pc4cancerbots (due to user-defined "save_interval*")
             # self.cell_time_mins 
             # self.substrate_frame = int(frame / self.modulo)
-            if (frame > max_svg_frame_pre_therapy):
-                self.substrate_frame = max_substrate_frame_pre_therapy + (frame - max_svg_frame_pre_therapy)
+            if (self.customized_output_freq and (frame > self.max_svg_frame_pre_therapy)):
+                # max_svg_frame_pre_therapy = int(self.therapy_activation_time/self.svg_delta_t)
+                # max_substrate_frame_pre_therapy = int(self.therapy_activation_time/self.substrate_delta_t)
+                self.substrate_frame = self.max_substrate_frame_pre_therapy + (frame - self.max_svg_frame_pre_therapy)
             else:
                 self.substrate_frame = int(frame / self.modulo)
 
