@@ -74,8 +74,8 @@ class SubstrateTab(object):
         # self.x_range = 2000.
         # self.y_range = 2000.
 
-        self.show_nucleus = True
-        self.show_edge = False
+        self.show_nucleus = False
+        self.show_edge = True
 
         # initial value
         self.field_index = 4
